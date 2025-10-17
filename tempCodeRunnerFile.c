@@ -1,1 +1,0 @@
-struct Livro cadastrar_emprestimo(struct Livro *biblioteca);
