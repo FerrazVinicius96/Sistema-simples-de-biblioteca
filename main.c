@@ -30,8 +30,7 @@ struct Livro {
 int menu(void);
 void cadastrar_livro(struct Livro *biblioteca, int *qtd_livros, int capacidade);
 void listar_livros(const struct Livro *biblioteca, int qtd_livros);
-void emprestar_livro(struct Livro *biblioteca, int *qtd_livros);
-
+void emprestar_livro(struct Livro *biblioteca, int qtd_livros);
 void limparBufferEntrada(void){
     int c;
     while((c = getchar()) != '\n' && c != EOF);
@@ -61,7 +60,7 @@ int main(void){
 
             case 3:
                 // printf("Funcionalidade de empréstimo (a implementar).\n");
-                emprestar_livro(biblioteca, &qtd_livros);
+                emprestar_livro(biblioteca, qtd_livros);
                 break;
 
             case 4:
@@ -148,20 +147,78 @@ void listar_livros(const struct Livro *biblioteca, int qtd_livros) {
     }
 }
 
-void emprestar_livro(struct Livro *biblioteca, int *qtd_livros){
-    int opcao, idx_emprestimo;
-
-    listar_livros(biblioteca, *qtd_livros);
-
-    printf("Digite o número do livro que quer emprestado: ");
-    scanf("%d", &idx_emprestimo);
-    limparBufferEntrada();
-    idx_emprestimo-=1;
-
-    if (biblioteca[idx_emprestimo].disponivel){
-        biblioteca[idx_emprestimo].disponivel = false;
-    } else {
-        printf("Infelizmente, livro não disponível.\n");
+void emprestar_livro(struct Livro *biblioteca, int qtd_livros){
+    if (qtd_livros == 0){
+        printf("Nenhum livro cadastrado.\n");
+        return;
     }
 
+    if (!ha_livros_disponiveis(biblioteca, qtd_livros)){
+        printf("Não há livros disponíveis para empréstimo.\n");
+        return;
+    }
+
+    // Mostra apenas os disponíveis (pode trocar para listar todos, se preferir)
+    listar_livros_disponiveis(biblioteca, qtd_livros);
+
+    while (1) {
+        printf("\nDigite o número do livro para emprestar (0 para cancelar): ");
+
+        int escolha;
+        if (scanf("%d", &escolha) != 1){
+            printf("Entrada inválida. Tente novamente.\n");
+            limparBufferEntrada();
+            continue;
+        }
+        limparBufferEntrada();
+
+        if (escolha == 0){
+            printf("Operação cancelada.\n");
+            return;
+        }
+
+        int idx = escolha - 1;
+        if (idx < 0 || idx >= qtd_livros){
+            printf("Índice fora do intervalo. Tente novamente.\n");
+            continue;
+        }
+
+        if (!biblioteca[idx].disponivel){
+            printf("Livro já está emprestado. Escolha outro.\n");
+            continue;
+        }
+
+        // Confirmação
+        printf("Confirmar empréstimo de \"%s\"? (s/n): ", biblioteca[idx].nome);
+        int ch = getchar();
+        limparBufferEntrada();
+        if (ch == 's' || ch == 'S'){
+            biblioteca[idx].disponivel = false;
+            printf("Empréstimo realizado com sucesso!\n");
+            return;
+        } else if (ch == 'n' || ch == 'N'){
+            printf("Empréstimo não realizado. Você pode escolher outro.\n");
+            // volta ao início do while
+        } else {
+            printf("Resposta inválida. Voltando à seleção.\n");
+        }
+    }
+}
+
+int ha_livros_disponiveis(const struct Livro *bib, int n) {
+    for (int i = 0; i < n; i++) if (bib[i].disponivel) return 1;
+    return 0;
+}
+
+void listar_livros_disponiveis(const struct Livro *bib, int n) {
+    printf("\n--- Livros Disponíveis ---\n");
+    int cont = 0;
+    for (int i = 0; i < n; i++) {
+        if (bib[i].disponivel) {
+            cont++;
+            printf("#%d  %s  (Autor: %s, Editora: %s, Edição: %d)\n",
+                   i + 1, bib[i].nome, bib[i].autor, bib[i].editora, bib[i].edicao);
+        }
+    }
+    if (cont == 0) printf("Nenhum disponível no momento.\n");
 }
