@@ -1,3 +1,16 @@
+/*
+TODO REALIZAR EMPRÉSTIMO
+TODO CONSULTAR EMPRÉSTIMO
+
+1- Relizar empréstimo
+1.1 - Usuário escolhe opção de empréstimo
+1.2 - Sistema apresenta TODOS os livros
+1.3 - Sistema recebe índice do livro ou voltar para menu principal
+1.4 - Confirma a opção com o usuário
+1.5 - Livro emprestado muda o elemento disponível da struct para false
+1.6 - Volta para o menu principal
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +30,7 @@ struct Livro {
 int menu(void);
 void cadastrar_livro(struct Livro *biblioteca, int *qtd_livros, int capacidade);
 void listar_livros(const struct Livro *biblioteca, int qtd_livros);
+void emprestar_livro(struct Livro *biblioteca, int *qtd_livros);
 
 void limparBufferEntrada(void){
     int c;
@@ -46,7 +60,8 @@ int main(void){
                 break;
 
             case 3:
-                printf("Funcionalidade de empréstimo (a implementar).\n");
+                // printf("Funcionalidade de empréstimo (a implementar).\n");
+                emprestar_livro(biblioteca, &qtd_livros);
                 break;
 
             case 4:
@@ -131,4 +146,22 @@ void listar_livros(const struct Livro *biblioteca, int qtd_livros) {
         printf("  Edição:     %d\n", biblioteca[i].edicao);
         printf("  Disponível: %s\n", biblioteca[i].disponivel ? "Sim" : "Não");
     }
+}
+
+void emprestar_livro(struct Livro *biblioteca, int *qtd_livros){
+    int opcao, idx_emprestimo;
+
+    listar_livros(biblioteca, *qtd_livros);
+
+    printf("Digite o número do livro que quer emprestado: ");
+    scanf("%d", &idx_emprestimo);
+    limparBufferEntrada();
+    idx_emprestimo-=1;
+
+    if (biblioteca[idx_emprestimo].disponivel){
+        biblioteca[idx_emprestimo].disponivel = false;
+    } else {
+        printf("Infelizmente, livro não disponível.\n");
+    }
+
 }
